@@ -32,39 +32,39 @@ When opened presented with last search city
 //    }
 
 
-$(document).ready(function() {
+$(document).ready(function () {
     console.log("page was loaded")
-    $("#search-weather").on("click", function(e){
+    $("#search-weather").on("click", function (e) {
         e.preventDefault()
-        var searchInput= $("#weather-input").val()
+        var searchInput = $("#weather4").val()
         console.log(searchInput)
         console.log("button was clicked")
         searchWeather(searchInput)
+        displayForecast(searchInput)
     })
     function searchWeather(city) {
-        var queryURL = "https://openweathermap.org/api" + city + "&y=&plot=short&apikey=6dda318d813c701c5214af7008878c77";
+        console.log(city)
+        var api = "b0f7f7e94d3f5e9983a12176da905fce"
+        var queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + api + "&units=imperial"
+       
 
         $.ajax({
             url: queryURL,
             method: "GET",
-        }).then(function(response){
+        }).then(function (response) {
             console.log(response)
             //Look at response and see how to look at the JSON object that you get returned
-            //ex: response.temp if that's what the object comes back as
-            //JSON beautifier (google)
-            //Call function for forcast and function for UV index
-            //display temperature
-            var getTemp=response.main.temp.toFixed(0)
-            tempEl=$('<p>').text('temperature: ' + getTemp + "F°")
+            var getTemp = response.main.temp.toFixed(0)
+            tempEl = $('<p>').text('temperature: ' + getTemp + "°F")
             //display humidity
-            var getHumid=response.main.humidity
-            humidEl=$('<p>').text('humidity: ' + getHumid + "%")
+            var getHumid = response.main.humidity
+            humidEl = $('<p>').text('humidity: ' + getHumid + "%")
             //display windspeed
-            var getWind=response.wind.speed.toFixed(0)
-            windEl=$('<p>').text('wind: ' + getWind + "mph")
+            var getWind = response.wind.speed.toFixed(0)
+            windEl = $('<p>').text('wind: ' + getWind + "mph")
             //display image
-            var image=response.weather[0].icon
-            var imageURL= "http://openweathermap.org/img/w/" + image + ".png";
+            var image = response.weather[0].icon
+            var imageURL = "http://openweathermap.org/img/w/" + image + ".png";
             var imgEl = $("<img>").attr("src", imageURL)
             $("#weather-input").append(imgEl);
             //appending elements to page
@@ -72,26 +72,46 @@ $(document).ready(function() {
             $("#weather-input").append(humidEl);
             $("#weather-input").append(windEl);
             //display UV index
-            queryURL="http://api.openweathermap.org/data/2.5/uvi?lat=" + response.coord.lat + "&lon=" + response.coord.lon + "&apid=6dda318d813c701c5214af7008878c77"
-        $.ajax({
-            url: queryURL,
-            method: "GET",
+            queryURL = "http://api.openweathermap.org/data/2.5/uvi?lat=" + response.coord.lat + "&lon=" + response.coord.lon + "&appid=b0f7f7e94d3f5e9983a12176da905fce"
+            $.ajax({
+                url: queryURL,
+                method: "GET",
 
-        }).then(function(indexResponse) {
-            uvEl =$('<p>').text('uv-index: ' + indexResponse.value)
+            }).then(function (indexResponse) {
+                uvEl = $('<p>').text('uv-index: ' + indexResponse.value)
+            })
+
+
         })
-
-
-        })
-
-    
-    
-        //Define functions outside of searchWeather function
-        //Look at API website (ex longitude and latitude)
-        //append things to the website
-        //dynamically create the card then append response items to the card then append card to the page
-        //three ajax (days weather, UV index, five-day forecast)
-
     }
+        function displayForecast(city) {
+            var queryURL = "https://api.openweathermap.org/data/2.5/forecast?q=" + city + "&units=imperial&appid=6dda318d813c701c5214af7008878c77";
+            response = $.ajax({
+                url: queryURL,
+                method: "GET"
+            }).then(function (forecastResponse) {
+                var days = forecastResponse.list
+                for (let i = 0; i < days.length; i++) {
+                    if (days[i].dt_txt.includes("00:00:00")) {
+                        console.log(days[i].main)
+                        //create our card
+                        var col=$("<div>").addClass("col-md-2")
+                        var card=$("<div>").addClass("card")
+                        var cardBody=$("<div>").addClass("card-body")
+                        var date=$("<h6>").addClass("card-title").text(days[i].dt_txt.slice(5,10))
+                        var temp=$("<p>").text("temp" + days[i].main.temp)
+                        var humidity=$("<p>").text("humidity" + days[i].main.humidity)
 
-})
+
+                        //append to forecast
+                        $("#forecast").append(col.append(card.append(cardBody.append(date, temp, humidity))));
+                    }
+
+                }
+
+
+
+
+            })
+        }
+        })
